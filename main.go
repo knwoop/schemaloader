@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -50,6 +51,13 @@ func parseFlags() *Config {
 }
 
 func export(config *Config) error {
+	if err := os.MkdirAll(config.Output, 0755); err != nil {
+		return fmt.Errorf("failed to create output directory: %w", err)
+	}
+
+	// Prepare output file path
+	outputPath := filepath.Join(config.Output, "schema.sql")
+
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
 		config.User,
 		config.Password,
@@ -71,7 +79,7 @@ func export(config *Config) error {
 	}
 
 	// Create output file
-	f, err := os.Create(config.Output)
+	f, err := os.Create(outputPath)
 	if err != nil {
 		return fmt.Errorf("failed to create output file: %w", err)
 	}
